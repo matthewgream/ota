@@ -1,0 +1,5 @@
+#!/bin/sh -e
+
+systemctl start avahi-alias@ota.local
+
+exit 0
