@@ -2,27 +2,21 @@
 param(
     [Parameter(Mandatory=$true)]
     [string]$file_info,
-    
     [Parameter(Mandatory=$true)]
     [string]$path_build,
-    
     [Parameter(Mandatory=$true)]
-    [string]$image
+    [string]$image,
+    [Parameter(Mandatory=$true)]
+    [string]$server
 )
 
 function Extract-Info {
-    param (
-        [string]$filePath,
-        [hashtable]$patterns
-    )
-    
+    param ([string]$filePath, [hashtable]$patterns)
     if (-not (Test-Path $filePath)) {
         return $null
     }
-    
     $content = Get-Content $filePath -Raw
     $result = @{}
-    
     foreach ($key in $patterns.Keys) {
         $match = [regex]::Match($content, $patterns[$key])
         if ($match.Success) {
@@ -32,25 +26,16 @@ function Extract-Info {
             $result[$key] = $null
         }
     }
-    
     return $result
 }
-
 function Upload-Image {
-    param (
-        [string]$binPath,
-        [string]$url,
-        [string]$newFileName,
-        [int]$timeout = 30
-    )
-    
+    param ([string]$binPath, [string]$url, [string]$newFileName, [int]$timeout = 30)    
     try {
-        Write-Verbose "Uploading file: $newFileName to $url"
+        Write-Verbose "Upload file: $newFileName to $url"
         $fileBytes = [System.IO.File]::ReadAllBytes($binPath)
         $fileEnc = [System.Text.Encoding]::GetEncoding('ISO-8859-1').GetString($fileBytes)
         $boundary = [System.Guid]::NewGuid().ToString()
         $LF = "`r`n"
-        
         $bodyLines = (
             "--$boundary",
             "Content-Disposition: form-data; name=`"image`"; filename=`"$newFileName`"",
@@ -58,7 +43,6 @@ function Upload-Image {
             $fileEnc,
             "--$boundary--$LF"
         ) -join $LF
-        
         $response = Invoke-RestMethod -Uri $url -Method Put -ContentType "multipart/form-data; boundary=`"$boundary`"" -Body $bodyLines -TimeoutSec $timeout
         Write-Verbose "Upload response: $response"
         return $response
@@ -68,48 +52,37 @@ function Upload-Image {
     }
 }
 
-# Main script
 $patterns = @{
-    'type' = '#define\s+DEFAULT_SOFTWARE_TYPE\s+"([^"]+)"'
-    'vers' = '#define\s+DEFAULT_SOFTWARE_VERS\s+"(\d+\.\d+\.\d+)"'
+    'type' = '#define\s+DEFAULT_TYPE\s+"([^"]+)"'
+    'vers' = '#define\s+DEFAULT_VERS\s+"(\d+\.\d+\.\d+)"'
 }
-
-Write-Verbose "Extracting info from $file_info"
+Write-Verbose "Using $file_info"
 $matches = Extract-Info -filePath $file_info -patterns $patterns
-
 if (-not $matches -or ($matches.Values -contains $null)) {
-    Write-Error "Could not extract type or vers from 'Config.hpp'"
+    Write-Error "Could not extract type or vers from '$file_info'"
     exit 1
 }
+$name = "$($matches['type'])_v$($matches['vers']).bin"
+$path = Join-Path $path_build $name
 
-Write-Verbose "Extracted type: $($matches['type'])"
-Write-Verbose "Extracted version: $($matches['vers'])"
+Write-Verbose "Image type: $($matches['type'])"
+Write-Verbose "Image vers: $($matches['vers'])"
+Write-Verbose "Image name: $name"
+Write-Verbose "Image path: $path"
 
-$new_name = "$($matches['type'])_v$($matches['vers']).bin"
-$new_path = Join-Path $path_build $new_name
-
-Write-Verbose "New filename: $new_name"
-Write-Verbose "New file path: $new_path"
-
-if (Test-Path $new_path) {
-    Write-Output "Image $new_name already exists in build directory. No action taken."
+if (Test-Path $path) {
+    Write-Output "Image $name already exists in build directory. No action taken."
     exit 0
 }
-
-$server_url = if ($env:FIRMWARE_UPLOAD_URL) { $env:FIRMWARE_UPLOAD_URL } else { "http://ota.local/images" }
-Write-Verbose "Server URL: $server_url"
-
+Write-Verbose "Image server: $server"
 try {
-    Write-Verbose "Uploading image: $image as $new_name"
-    Upload-Image -binPath $image -url $server_url -newFileName $new_name
-    Write-Output "Image upload succeeded: $new_name"
-    
-    # Copy the file to the build directory with the new name
-    Copy-Item -Path $image -Destination $new_path -Force
-    Write-Output "Image copied to build directory: $new_path"
+    Write-Verbose "Image upload: $image as $name"
+    Upload-Image -binPath $image -url $server -newFileName $name
+    Write-Output  "Image upload succeeded: $name"
+    Copy-Item -Path $image -Destination $path -Force
+    Write-Output  "Image copied to build directory: $path"
 }
 catch {
     Write-Error "An error occurred: $_"
     exit 1
 }
-
