@@ -26,7 +26,8 @@ const image_upload = multer ({ dest: '/tmp' });
 const image_dataType = (filename) => filename.match (/^([^_]+)/)?.[1] || '';
 const image_dataVersion = (filename) => filename.match (/_v(\d+\.\d+\.\d+)/)?.[1] || '';
 const image_dataCompress = (data) => zlib.deflateSync (data);
-const image_dataManifest = (directory) => Object.values (fs.readdirSync (directory).reduce ((images, filename) => {
+const image_dataManifest = (directory) => 
+	Object.values (fs.readdirSync (directory).filter (file => !file.startsWith ('.')).reduce ((images, filename) => {
         const type = image_dataType (filename), version = image_dataVersion (filename);
         if (!images [type] || images [type].version < version)
             images [type] = { type, version, filename };
@@ -70,7 +71,7 @@ const getFileDetails = (filepath) => {
 };
 app.get ('/images', (req, res) => {
     try {
-        const files = fs.readdirSync (data), groups = groupAndSortFiles (files);
+        const files = fs.readdirSync (data).filter (file => !file.startsWith ('.')), groups = groupAndSortFiles (files);
         let html = `
 	<html>
         <head>

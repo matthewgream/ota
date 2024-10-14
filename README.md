@@ -68,3 +68,12 @@ if (ota_counter >= DEFAULT_SOFTWARE_TIME) {
 Note the server also includes code for address based json configuration requests.
 Note also there is no security: no passwords, no certificates, etc and is designed for a local network.
 
+Note the audit trail in the journal:
+
+```syslog
+server.js[16428]: express up for 'ota_server' ! -> IPv6/:::8090 [/opt/ota/images]
+server.js[16428]: /images manifest request: 1 items, 218 bytes, types=[batterymonitor-custom-esp32c3], type=batterymonitor-custom-esp32c3, vers=1.0.3, addr=24:58:7c:35:e9:e4
+server.js[16428]: /images upload succeeded: 'batterymonitor-custom-esp32c3_v1.0.4.bin' (2003376 bytes) --> '/opt/ota/images/batterymonitor-custom-esp32c3_v1.0.4.bin.zz' (1181661 bytes) [::ffff:192.168.0.149]
+```
+
+
