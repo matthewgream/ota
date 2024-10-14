@@ -2,7 +2,7 @@
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
-const name = 'ota_server';
+const name = `ota_server`;
 const host = process.env.HOST || 'ota.local';
 const port = process.env.PORT || 8090;
 const data = process.env.DATA || '/opt/ota/images';
@@ -72,7 +72,7 @@ app.get ('/images', (req, res) => {
     try {
         const files = fs.readdirSync (data), groups = groupAndSortFiles (files);
         let html = `
-        <html>
+	<html>
         <head>
             <style>
                 body { font-family: Consolas, monospace; font-size: 11px; margin: 20px; background-color: #f0f0f0; }
@@ -98,15 +98,18 @@ app.get ('/images', (req, res) => {
                     const filepath = path.join(data, filename);
                     const fileDetails = getFileDetails(filepath);
                     html += `<tr>
-                        <td class="version-col"><a href="/images/${filename}">${version}</a>${index === 0 ? ' <span class="latest">(latest)</span>' : ''}</td>
+                        <td class="version-col"><a href="/images/${filename}">${version}</a>${index === 0 ? ` <span class="latest">(latest)</span>` : ``}</td>
                         <td class="file-details">${fileDetails}</td>
                         <td>${filename}</td>
                     </tr>`;
                 });
-                html += '</table>';
+                html += `</table>`;
             });
         });
-        html += '</body></html>';
+        html += `
+	</body>
+	</html>
+	`;
         res.send (html);
     } catch (error) {
         console.error (`/images failed: error <<<${error}>>>`);
