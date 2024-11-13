@@ -1,0 +1,7 @@
+#!/bin/sh -e
+
+if [ -f /opt/ota/server/scripts/start ]; then
+        /bin/sh /opt/ota/server/scripts/start &
+fi
+
+exit 0

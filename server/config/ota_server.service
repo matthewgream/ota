@@ -5,7 +5,7 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/opt/ota/server/server.js
+ExecStart=/opt/ota/server/daemon/server.js
 ExecReload=kill -HUP $MAINPID
 KillMode=process
 Restart=on-failure

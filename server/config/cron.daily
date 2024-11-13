@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ -f /opt/ota/server/scripts/daily ]; then
+        /bin/sh /opt/ota/server/scripts/daily &
+fi
+
+exit 0
+
