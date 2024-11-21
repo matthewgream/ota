@@ -1,0 +1,4 @@
+TFTP_USERNAME="tftp"
+TFTP_DIRECTORY="/opt/ota/images"
+TFTP_ADDRESS=":69"
+TFTP_OPTIONS="--secure"
