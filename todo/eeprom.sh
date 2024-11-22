@@ -36,17 +36,17 @@ check_and_update_eeprom() {
        done
 
         cat $TEMP_CONFIG
-#
-#       if rpi-eeprom-config --apply "$TEMP_CONFIG"; then
-#           echo "EEPROM: update successful"
-#           rm "$TEMP_CONFIG"
-#           return 0
-#       else
-#           echo "EEPROM: update failed"
-#           rm "$TEMP_CONFIG"
-#           return 1
-#       fi
-#
+
+       if rpi-eeprom-config --apply "$TEMP_CONFIG"; then
+           echo "EEPROM: update successful"
+           rm "$TEMP_CONFIG"
+           return 0
+       else
+           echo "EEPROM: update failed"
+           rm "$TEMP_CONFIG"
+           return 1
+       fi
+
 
    else
        echo "EEPROM: configuration is correct"
