@@ -27,7 +27,7 @@ app.get('/:serial/:filename', (req, res) => {
     const filePath = path.join(data_images, fileName);
     if (!isValidSerial(req.params.serial))
         return res.status(400).send(`DOWNLOAD: ${fileName}: failure, bad serial number`);
-	//
+    //
     if (!fs.existsSync(filePath))
         return res.status(404).send(`DOWNLOAD: ${fileName}: failure, file not found`);
     res.sendFile(filePath, (err) => {
@@ -52,7 +52,7 @@ app.put('/:serial/:filename', exp.raw({ type: 'application/octet-stream', limit:
     const filePath = path.join(data_images, fileName);
     if (!isValidSerial(req.params.serial))
         return res.status(400).send(`UPLOAD: ${fileName}: failure, bad serial number`);
-	//
+    //
     if (!req.body || !req.body.length)
         return res.status(400).send(`UPLOAD: ${fileName}: failure, file not provided`);
     const hash = crypto.createHash('sha256').update(req.body).digest('hex');
@@ -74,7 +74,7 @@ app.put('/:serial/:filename/chunked', (req, res) => {
     const filePath = path.join(data_images, fileName);
     if (!isValidSerial(req.params.serial))
         return res.status(400).send(`UPLOAD: ${fileName}: (chunked) failure, bad serial number`);
-	//
+    //
 
     makeDirectory(path.join(data_images, req.params.serial));
     const chunk = parseInt(req.query.chunk), final = parseInt(req.query.final);
@@ -146,25 +146,25 @@ app.put('/:serial/:filename/chunked', (req, res) => {
                 res.status(400).send(`UPLOAD: ${fileName}: (chunked) failure, empty chunk received`);
                 return;
             }
-			if (chunkSize !== 0) {
-            	const chunkHash = hash.digest('hex');
-            	chunkHashes.push(chunkHash);
-            	console.log(`UPLOAD: ${fileName}: (chunked) receive, chunk=${chunk}, final=${final}, bytes=${chunkSize}, hash=${chunkHash}`);
-			} else
-            	console.log(`UPLOAD: ${fileName}: (chunked) receive, chunk=${chunk}, final=${final}`);
+            if (chunkSize !== 0) {
+                const chunkHash = hash.digest('hex');
+                chunkHashes.push(chunkHash);
+                console.log(`UPLOAD: ${fileName}: (chunked) receive, chunk=${chunk}, final=${final}, bytes=${chunkSize}, hash=${chunkHash}`);
+            } else
+                console.log(`UPLOAD: ${fileName}: (chunked) receive, chunk=${chunk}, final=${final}`);
             if (!res.headersSent)
                 res.send(`UPLOAD: ${fileName}: (chunked) success`);
             if (final) {
                 const fileSize = fs.statSync(filePath).size;
                 const fileHash = chunkHashes.reduce((prev, curr, index) => index === 0 ? curr : crypto.createHash('sha256').update(prev + curr).digest('hex'));
-				if (req.query.hash && req.query.hash !== fileHash) {
-                	console.info(`UPLOAD: ${fileName}: (chunked) failed, bytes=${fileSize}, hash=${fileHash} != ${req.query.hash}`);
-            		fs.unlink(filePath, (err) => {
-                		if (err) console.error(`UPLOAD: ${fileName}: (chunked) warning, could not delete partial file, error=${err}`);
-					});
-				} else 
-                	console.info(`UPLOAD: ${fileName}: (chunked) success, bytes=${fileSize}, hash=${fileHash}`);
-        		fileChunkHashes.delete(fileName);
+                if (req.query.hash && req.query.hash !== fileHash) {
+                    console.info(`UPLOAD: ${fileName}: (chunked) failed, bytes=${fileSize}, hash=${fileHash} != ${req.query.hash}`);
+                    fs.unlink(filePath, (err) => {
+                        if (err) console.error(`UPLOAD: ${fileName}: (chunked) warning, could not delete partial file, error=${err}`);
+                    });
+                } else
+                    console.info(`UPLOAD: ${fileName}: (chunked) success, bytes=${fileSize}, hash=${fileHash}`);
+                fileChunkHashes.delete(fileName);
             }
         };
         if (!streamError)

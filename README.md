@@ -26,12 +26,12 @@ In a browser, http://ota.local:8090/images yields a human readable and sorted li
 
 ![Images](client/ota_server.jpg)
 
-For the images, can copy them into the `/ota/server/images` directory, noting the specific format and compression, or use a client side tool,
-for example see the `client/platform.local.txt` and `client/upload_fota.ps1` which will automate uploads of new version from Arduino IDE.
+For the images, they can be copied into the `/ota/server/images` directory, noting the specific format and compression, or use a client side tool.
+For client side tool for Arduino IDE, see `client/arduino_ide/platform.local.txt` and `client/arduino_ide/upload_fota.ps1` to automate uploads from Arduino IDE builds.
+For client side tool for Platform IO, see `client/platform_io/platformio.ini`, `client/platform_io/build_post_ota_upload.py`, and `client/platform_io/build_pre_set_variables.py` to automate uploads from Platform IO builds.
 Images are compressed with zlib in the server before being stored with `.zz` extension.
 
-For the clients, a request with specific type, vers and addr will yield the most recent version of images available (or nothing, if no newer
-version). 
+For the clients, a request with specific type, vers and addr will yield the most recent version of images available (or nothing, if no newer version). 
 
 ```bash
 $ curl http://ota.local:8090/images/images.json?type=batterymonitor-custom-esp32c3\&vers=1.0.2\&addr=01:02:03:04:05:06
@@ -39,10 +39,12 @@ $ curl http://ota.local:8090/images/images.json?type=batterymonitor-custom-esp32
 ```
 
 For an Arduino based client, use the `esp32FOTA` library (https://docs.arduino.cc/libraries/esp32fota) and the `esp32-flashz` 
-library (https://docs.arduino.cc/libraries/esp32-flashz). You can see an example wrapper in `client/UtilitiesOTA.hpp`. For substantive
+library (https://docs.arduino.cc/libraries/esp32-flashz). You can see an example wrapper in `client/arduino/UtilitiesOTA.hpp` and `client/arduino/ProgramUpdates.hpp` . For substantive
 documentation, see https://github.com/chrisjoyce911/esp32FOTA.
 
-![Images](client/arduino_ide.jpg)
+Some experimental code exists for a Raspberry PI based recovery image, see `server/daemon/server-backup.js` and the `todo` directory. This will be better integrated in future. 
+
+![Images](client/arduino_ide/arduino_ide.jpg)
 
 ```C++
 
